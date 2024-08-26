@@ -18,4 +18,4 @@ Email: ducnhatvo@gmail.com<br>
 Skybe: live:c99a173043072052<br>
 Website: <a href="https://saypdf.com/contact.html" target="_blank">https://saypdf.com/contact.html </a>
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/ducnhatvo){:target="_blank"}
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/ducnhatvo)
