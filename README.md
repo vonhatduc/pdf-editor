@@ -220,13 +220,37 @@ To leverage this README for [SayPDF.com](https://saypdf.com) SEO:
       "name": "SayPDF Editor SDK",
       "sameAs": "https://github.com/saypdf/pdf-editor-sdk",
       "applicationCategory": "DesignApplication",
-      "operatingSystem": "Web browser"
+      "operatingSystem": "Web browser",
+      "author": {
+          "@type": "Organization",
+          "name": "DONG HOA AI DATA GENERATION LTD",
+          "url": "https://saypdf.com",
+          "identifier": "NI733203",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Office 1334 92 Castle Street",
+            "addressLocality": "Belfast",
+            "postalCode": "BT1 1HE",
+            "addressCountry": "UK"
+          }
+      }
     }
     ```
 3.  **Cross-Linking**: Ensure your blog posts on SayPDF reference this "Open Source Edition" to build a natural link profile.
 
 ---
 
+### 🏢 Legal & Corporate Identity
+
+**SayPDF** and this SDK are products of **DONG HOA AI DATA GENERATION LTD**.
+
+*   **Company Name**: DONG HOA AI DATA GENERATION LTD
+*   **Company Number**: NI733203
+*   **Registered Office**: Office 1334 92 Castle Street, Belfast, United Kingdom, BT1 1HE
+
+---
+
 <p align="center">
-  Maintained with ❤️ by the team at <a href="https://saypdf.com">SayPDF.com</a>
+  Maintained with ❤️ by the team at <a href="https://saypdf.com">SayPDF.com</a><br>
+  © 2025 DONG HOA AI DATA GENERATION LTD. All rights reserved.
 </p>
