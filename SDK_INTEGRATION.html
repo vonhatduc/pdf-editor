@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Editor SDK - Integration Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-code: #0d1117;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --code-keyword: #ff7b72;
+            --code-string: #a5d6ff;
+            --code-function: #d2a8ff;
+            --code-comment: #8b949e;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 3rem 0;
+            text-align: center;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.25rem;
+            opacity: 0.95;
+        }
+
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* Sections */
+        section {
+            margin-bottom: 4rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Syntax Highlighting */
+        .keyword { color: var(--code-keyword); }
+        .string { color: var(--code-string); }
+        .function { color: var(--code-function); }
+        .comment { color: var(--code-comment); }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+            color: #93c5fd;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: #f59e0b;
+            color: #fbbf24;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+            color: #6ee7b7;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+        }
+
+        .feature-card h4 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>📄 PDF Editor SDK</h1>
+            <p>Complete PDF Editing Solution for Your Web Applications</p>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#quick-start">Quick Start</a></li>
+                <li><a href="#configuration">Configuration</a></li>
+                <li><a href="#api">API Reference</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#styling">Styling</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- OVERVIEW -->
+        <section id="overview">
+            <h2>📖 Overview</h2>
+            <div class="card">
+                <p>The PDF Editor SDK is a powerful, framework-agnostic solution that allows you to integrate a complete PDF editing experience into your web applications. Built on top of Fabric.js and Vue 3, it provides a rich set of features for manipulating PDF documents directly in the browser.</p>
+                
+                <h3>✨ Key Features</h3>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h4>📝 Text Editing</h4>
+                        <p>Add, edit, and style text with full typography control</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🖼️ Image Management</h4>
+                        <p>Insert, resize, and manipulate images</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎨 Shape Drawing</h4>
+                        <p>Create lines, rectangles, circles, and custom shapes</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📊 QR & Barcodes</h4>
+                        <p>Generate QR codes and barcodes on the fly</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>✍️ Digital Signatures</h4>
+                        <p>Add signature images to documents</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>💧 Watermarks</h4>
+                        <p>Protect documents with custom watermarks</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📤 Export Options</h4>
+                        <p>Export to PDF, PNG, or JPEG formats</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📄 Multi-page Support</h4>
+                        <p>Work with multiple pages seamlessly</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- INSTALLATION -->
+        <section id="installation">
+            <h2>📦 Installation</h2>
+            
+            <div class="alert alert-warning">
+                <strong>⚠️ Private Library:</strong> This is a premium/private SDK. Distribution method may vary based on your licensing agreement.
+            </div>
+
+            <h3>Option 1: Direct File Integration</h3>
+            <div class="card">
+                <p>Copy the built library files to your project:</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="comment">// Copy these files from dist/lib/ to your project</span>
+pdf-editor-sdk.es.js
+pdf-editor-sdk.umd.js
+pdf-editor-sdk.css
+pdf-editor-sdk.d.ts</code></pre>
+            </div>
+
+            <h3>Option 2: Private NPM Registry</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">npm</span> install @your-company/pdf-editor-sdk
+<span class="comment"># or</span>
+<span class="keyword">yarn</span> add @your-company/pdf-editor-sdk</code></pre>
+            </div>
+
+            <h3>Option 3: Git Repository</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">npm</span> install git+https://github.com/your-company/pdf-editor-sdk.git
+<span class="comment"># or add to package.json</span>
+{
+  <span class="string">"dependencies"</span>: {
+    <span class="string">"pdf-editor-sdk"</span>: <span class="string">"git+https://github.com/your-company/pdf-editor-sdk.git"</span>
+  }
+}</code></pre>
+            </div>
+
+            <h3>Required Peer Dependencies</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">npm</span> install vue@^3.4.0 pinia@^2.1.0
+<span class="comment"># or</span>
+<span class="keyword">yarn</span> add vue@^3.4.0 pinia@^2.1.0</code></pre>
+
+                <div class="alert alert-warning" style="margin-top: 1rem;">
+                    <strong>⚠️ Important for UMD Build:</strong> WHEN USING THE UMD BUILD (via script tag), you must load all peer dependencies in this specific order:
+                    <pre style="margin-top: 0.75rem; background: rgba(0,0,0,0.2);"><code>&lt;!-- A. CSS --&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css"&gt;
+
+&lt;!-- B. JS Dependencies --&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/vue@3.4.30/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/vue-demi@0.14.6/lib/index.iife.min.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/pinia@2.1.7/dist/pinia.iife.prod.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/element-plus/dist/index.full.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- C. PDF Editor SDK --&gt;
+&lt;script src="./pdf-editor-sdk.umd.js"&gt;&lt;/script&gt;</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- QUICK START -->
+        <section id="quick-start">
+            <h2>🚀 Quick Start</h2>
+            
+            <h3>1. Import the SDK</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">import</span> PDFEditorSDK <span class="keyword">from</span> <span class="string">'pdf-editor-sdk'</span>
+<span class="keyword">import</span> <span class="string">'pdf-editor-sdk/style.css'</span></code></pre>
+            </div>
+
+            <h3>2. Create a Container</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">&lt;div</span> <span class="function">id</span>=<span class="string">"editor-container"</span> <span class="function">style</span>=<span class="string">"width: 100%; height: 600px;"</span><span class="keyword">&gt;&lt;/div&gt;</span></code></pre>
+            </div>
+
+            <h3>3. Initialize the Editor</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">const</span> <span class="function">editor</span> = <span class="keyword">new</span> <span class="function">PDFEditorSDK</span>({
+  <span class="function">container</span>: <span class="string">'#editor-container'</span>,
+  <span class="function">width</span>: <span class="keyword">800</span>,
+  <span class="function">height</span>: <span class="keyword">600</span>,
+  <span class="function">onReady</span>: () => {
+    console.<span class="function">log</span>(<span class="string">'Editor ready!'</span>)
+  },
+  <span class="function">onError</span>: <span class="keyword">(error)</span> => {
+    console.<span class="function">error</span>(<span class="string">'Editor error:'</span>, error)
+  }
+})
+
+<span class="comment">// Load a PDF</span>
+<span class="keyword">await</span> editor.<span class="function">loadPDF</span>(<span class="string">'/path/to/document.pdf'</span>)
+
+<span class="comment">// Add some text</span>
+editor.<span class="function">addText</span>(<span class="string">'Hello World'</span>, { 
+  <span class="function">fontSize</span>: <span class="keyword">24</span>,
+  <span class="function">fontFamily</span>: <span class="string">'Arial'</span>
+})
+
+<span class="comment">// Export to PDF</span>
+<span class="keyword">const</span> blob = <span class="keyword">await</span> editor.<span class="function">exportToPDF</span>()
+<span class="comment">// Download or upload the blob</span></code></pre>
+            </div>
+
+            <div class="alert alert-success">
+                <strong>✅ That's it!</strong> You now have a fully functional PDF editor in your application.
+            </div>
+        </section>
+
+        <!-- CONFIGURATION -->
+        <section id="configuration">
+            <h2>⚙️ Configuration Options</h2>
+            
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Option</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>container</code></td>
+                            <td>HTMLElement | string</td>
+                            <td>required</td>
+                            <td>Container element or CSS selector</td>
+                        </tr>
+                        <tr>
+                            <td><code>width</code></td>
+                            <td>number</td>
+                            <td>800</td>
+                            <td>Canvas width in pixels</td>
+                        </tr>
+                        <tr>
+                            <td><code>height</code></td>
+                            <td>number</td>
+                            <td>600</td>
+                            <td>Canvas height in pixels</td>
+                        </tr>
+                        <tr>
+                            <td><code>theme</code></td>
+                            <td>'light' | 'dark'</td>
+                            <td>'light'</td>
+                            <td>Color theme</td>
+                        </tr>
+                        <tr>
+                            <td><code>locale</code></td>
+                            <td>'en' | 'vi' | 'zh'</td>
+                            <td>'en'</td>
+                            <td>Language</td>
+                        </tr>
+                        <tr>
+                            <td><code>initialPDF</code></td>
+                            <td>string | File | ArrayBuffer</td>
+                            <td>undefined</td>
+                            <td>PDF to load on init</td>
+                        </tr>
+                        <tr>
+                            <td><code>wasmUrl</code></td>
+                            <td>string</td>
+                            <td>undefined</td>
+                            <td>URL to pdfcore.wasm file (required)</td>
+                        </tr>
+                        <tr>
+                            <td><code>features</code></td>
+                            <td>object</td>
+                            <td>all enabled</td>
+                            <td>Enable/disable features</td>
+                        </tr>
+                        <tr>
+                            <td><code>onReady</code></td>
+                            <td>function</td>
+                            <td>undefined</td>
+                            <td>Called when ready</td>
+                        </tr>
+                        <tr>
+                            <td><code>onExport</code></td>
+                            <td>function</td>
+                            <td>undefined</td>
+                            <td>Called on export</td>
+                        </tr>
+                        <tr>
+                            <td><code>onError</code></td>
+                            <td>function</td>
+                            <td>undefined</td>
+                            <td>Called on error</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Features Configuration</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">const</span> editor = <span class="keyword">new</span> <span class="function">PDFEditorSDK</span>({
+  <span class="function">container</span>: <span class="string">'#editor'</span>,
+  <span class="function">features</span>: {
+    <span class="function">text</span>: <span class="keyword">true</span>,      <span class="comment">// Enable text editing</span>
+    <span class="function">image</span>: <span class="keyword">true</span>,     <span class="comment">// Enable image insertion</span>
+    <span class="function">shape</span>: <span class="keyword">true</span>,     <span class="comment">// Enable shape drawing</span>
+    <span class="function">qrcode</span>: <span class="keyword">true</span>,    <span class="comment">// Enable QR codes</span>
+    <span class="function">barcode</span>: <span class="keyword">true</span>,   <span class="comment">// Enable barcodes</span>
+    <span class="function">signature</span>: <span class="keyword">false</span>, <span class="comment">// Disable signatures</span>
+    <span class="function">watermark</span>: <span class="keyword">false</span>  <span class="comment">// Disable watermarks</span>
+  }
+})</code></pre>
+            </div>
+        </section>
+
+        <!-- API REFERENCE -->
+        <section id="api">
+            <h2>📚 API Reference</h2>
+
+            <h3>Canvas Control</h3>
+            <div class="card">
+                <h4>getCanvas(): Canvas | null</h4>
+                <p>Returns the underlying Fabric.js canvas instance for advanced manipulation.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">const</span> canvas = editor.<span class="function">getCanvas</span>()
+<span class="keyword">if</span> (canvas) {
+  canvas.<span class="function">setBackgroundColor</span>(<span class="string">'#f0f0f0'</span>, canvas.renderAll.<span class="function">bind</span>(canvas))
+}</code></pre>
+
+                <h4>setZoom(zoom: number): void</h4>
+                <p>Set the canvas zoom level (1 = 100%).</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code>editor.<span class="function">setZoom</span>(<span class="keyword">1.5</span>) <span class="comment">// 150% zoom</span></code></pre>
+
+                <h4>getZoom(): number</h4>
+                <p>Get the current zoom level.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">const</span> currentZoom = editor.<span class="function">getZoom</span>()</code></pre>
+
+                <h4>fitToScreen(): void</h4>
+                <p>Automatically fit the canvas to the container size.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code>editor.<span class="function">fitToScreen</span>()</code></pre>
+            </div>
+
+            <h3>Element Creation</h3>
+            <div class="card">
+                <h4>addText(text?: string, options?: TextOptions): void</h4>
+                <p>Add a text element to the canvas.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code>editor.<span class="function">addText</span>(<span class="string">'My Text'</span>, {
+  <span class="function">fontSize</span>: <span class="keyword">32</span>,
+  <span class="function">fontFamily</span>: <span class="string">'Helvetica'</span>,
+  <span class="function">fontWeight</span>: <span class="string">'bold'</span>,
+  <span class="function">fill</span>: <span class="string">'#333333'</span>,
+  <span class="function">opacity</span>: <span class="keyword">1</span>
+})</code></pre>
+
+                <h4>addImage(url: string, options?: ImageOptions): void</h4>
+                <p>Add an image from a URL.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code>editor.<span class="function">addImage</span>(<span class="string">'/path/to/image.jpg'</span>, {
+  <span class="function">scaleX</span>: <span class="keyword">0.5</span>,
+  <span class="function">scaleY</span>: <span class="keyword">0.5</span>,
+  <span class="function">opacity</span>: <span class="keyword">0.8</span>
+})</code></pre>
+
+                <h4>addQRCode(content: string, options?: QRCodeOptions): void</h4>
+                <p>Generate and add a QR code.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code>editor.<span class="function">addQRCode</span>(<span class="string">'https://example.com'</span>, {
+  <span class="function">size</span>: <span class="keyword">200</span>,
+  <span class="function">errorCorrectionLevel</span>: <span class="string">'H'</span>
+})</code></pre>
+
+                <h4>addBarCode(content: string, options?: BarCodeOptions): void</h4>
+                <p>Generate and add a barcode.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code>editor.<span class="function">addBarCode</span>(<span class="string">'123456789'</span>, {
+  <span class="function">format</span>: <span class="string">'CODE128'</span>,
+  <span class="function">displayValue</span>: <span class="keyword">true</span>
+})</code></pre>
+
+                <h4>addWatermark(text: string, options?: TextOptions): void</h4>
+                <p>Add a semi-transparent watermark.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code>editor.<span class="function">addWatermark</span>(<span class="string">'CONFIDENTIAL'</span>, {
+  <span class="function">fontSize</span>: <span class="keyword">72</span>,
+  <span class="function">opacity</span>: <span class="keyword">0.2</span>,
+  <span class="function">fill</span>: <span class="string">'#ff0000'</span>
+})</code></pre>
+            </div>
+
+            <h3>Element Manipulation</h3>
+            <div class="card">
+                <h4>deleteSelected(): void</h4>
+                <p>Delete currently selected element(s).</p>
+
+                <h4>duplicateSelected(): void</h4>
+                <p>Duplicate currently selected element(s).</p>
+
+                <h4>selectAll(): void</h4>
+                <p>Select all elements on the canvas.</p>
+
+                <h4>clearSelection(): void</h4>
+                <p>Deselect all elements.</p>
+                
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code>editor.<span class="function">selectAll</span>()
+editor.<span class="function">duplicateSelected</span>()
+editor.<span class="function">clearSelection</span>()</code></pre>
+            </div>
+
+            <h3>PDF Operations</h3>
+            <div class="card">
+                <h4>loadPDF(file: File | ArrayBuffer | string): Promise&lt;void&gt;</h4>
+                <p>Load a PDF file from various sources.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="comment">// From URL</span>
+<span class="keyword">await</span> editor.<span class="function">loadPDF</span>(<span class="string">'/documents/sample.pdf'</span>)
+
+<span class="comment">// From File input</span>
+<span class="keyword">const</span> fileInput = document.<span class="function">querySelector</span>(<span class="string">'input[type="file"]'</span>)
+fileInput.<span class="function">addEventListener</span>(<span class="string">'change'</span>, <span class="keyword">async</span> (e) => {
+  <span class="keyword">const</span> file = e.target.files[<span class="keyword">0</span>]
+  <span class="keyword">await</span> editor.<span class="function">loadPDF</span>(file)
+})</code></pre>
+
+                <h4>getPageCount(): number</h4>
+                <p>Get the total number of pages.</p>
+
+                <h4>goToPage(pageNumber: number): void</h4>
+                <p>Navigate to a specific page (1-indexed).</p>
+
+                <h4>addPage(): void</h4>
+                <p>Add a new blank page.</p>
+
+                <h4>deletePage(pageNumber: number): void</h4>
+                <p>Delete a specific page.</p>
+
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">const</span> totalPages = editor.<span class="function">getPageCount</span>()
+console.<span class="function">log</span>(<span class="string">`Total pages: ${totalPages}`</span>)
+
+editor.<span class="function">goToPage</span>(<span class="keyword">2</span>) <span class="comment">// Go to page 2</span>
+editor.<span class="function">addPage</span>()   <span class="comment">// Add new page</span></code></pre>
+            </div>
+
+            <h3>Export Methods</h3>
+            <div class="card">
+                <h4>exportToPDF(options?: ExportOptions): Promise&lt;Blob&gt;</h4>
+                <p>Export the document as PDF.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">const</span> pdfBlob = <span class="keyword">await</span> editor.<span class="function">exportToPDF</span>({
+  <span class="function">pages</span>: <span class="string">'all'</span>, <span class="comment">// 'all', 'current', or [1, 2, 3]</span>
+  <span class="function">quality</span>: <span class="keyword">1</span>,
+  <span class="function">dpi</span>: <span class="keyword">300</span>
+})
+
+<span class="comment">// Download the PDF</span>
+<span class="keyword">const</span> url = URL.<span class="function">createObjectURL</span>(pdfBlob)
+<span class="keyword">const</span> a = document.<span class="function">createElement</span>(<span class="string">'a'</span>)
+a.href = url
+a.download = <span class="string">'document.pdf'</span>
+a.<span class="function">click</span>()</code></pre>
+
+                <h4>exportToPNG(options?: ExportOptions): Promise&lt;Blob&gt;</h4>
+                <p>Export as PNG image.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">const</span> pngBlob = <span class="keyword">await</span> editor.<span class="function">exportToPNG</span>({
+  <span class="function">quality</span>: <span class="keyword">1</span>,
+  <span class="function">dpi</span>: <span class="keyword">150</span>
+})</code></pre>
+
+                <h4>exportToJPEG(options?: ExportOptions): Promise&lt;Blob&gt;</h4>
+                <p>Export as JPEG image.</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">const</span> jpegBlob = <span class="keyword">await</span> editor.<span class="function">exportToJPEG</span>({
+  <span class="function">quality</span>: <span class="keyword">0.9</span>,
+  <span class="function">dpi</span>: <span class="keyword">72</span>
+})</code></pre>
+            </div>
+
+            <h3>Lifecycle Methods</h3>
+            <div class="card">
+                <h4>mount(): void</h4>
+                <p>Mount the editor to the DOM (if unmounted).</p>
+
+                <h4>unmount(): void</h4>
+                <p>Unmount the editor from the DOM without destroying it.</p>
+
+                <h4>destroy(): void</h4>
+                <p>Completely destroy the editor and cleanup resources.</p>
+
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="comment">// Cleanup on component unmount</span>
+<span class="keyword">onBeforeUnmount</span>(() => {
+  editor.<span class="function">destroy</span>()
+})</code></pre>
+            </div>
+        </section>
+
+        <!-- EXAMPLES -->
+        <section id="examples">
+            <h2>💡 Integration Examples</h2>
+
+            <h3>Vanilla JavaScript</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">&lt;!DOCTYPE html&gt;</span>
+<span class="keyword">&lt;html&gt;</span>
+<span class="keyword">&lt;head&gt;</span>
+  <span class="keyword">&lt;link</span> <span class="function">rel</span>=<span class="string">"stylesheet"</span> <span class="function">href</span>=<span class="string">"pdf-editor-sdk.css"</span><span class="keyword">&gt;</span>
+<span class="keyword">&lt;/head&gt;</span>
+<span class="keyword">&lt;body&gt;</span>
+  <span class="keyword">&lt;div</span> <span class="function">id</span>=<span class="string">"editor"</span><span class="keyword">&gt;&lt;/div&gt;</span>
+
+  <span class="comment">&lt;!-- Load peer dependencies first --&gt;</span>
+  <span class="keyword">&lt;script</span> <span class="function">src</span>=<span class="string">"https://cdn.jsdelivr.net/npm/vue@3.4.30/dist/vue.global.prod.js"</span><span class="keyword">&gt;&lt;/script&gt;</span>
+  <span class="keyword">&lt;script</span> <span class="function">src</span>=<span class="string">"https://cdn.jsdelivr.net/npm/pinia@2.1.7/dist/pinia.iife.prod.js"</span><span class="keyword">&gt;&lt;/script&gt;</span>
+
+  <span class="comment">&lt;!-- Load SDK (UMD build for browser) --&gt;</span>
+  <span class="keyword">&lt;script</span> <span class="function">src</span>=<span class="string">"./pdf-editor-sdk.umd.js"</span><span class="keyword">&gt;&lt;/script&gt;</span>
+
+  <span class="keyword">&lt;script&gt;</span>
+    <span class="comment">// Access SDK from global variable</span>
+    <span class="keyword">const</span> <span class="function">PDFEditorSDK</span> = window.PDFEditorSDK?.<span class="function">default</span> || window.PDFEditorSDK
+    
+    <span class="keyword">const</span> editor = <span class="keyword">new</span> <span class="function">PDFEditorSDK</span>({
+      <span class="function">container</span>: <span class="string">'#editor'</span>,
+      <span class="function">width</span>: <span class="keyword">800</span>,
+      <span class="function">height</span>: <span class="keyword">600</span>,
+      <span class="function">onReady</span>: () => {
+        console.<span class="function">log</span>(<span class="string">'Ready!'</span>)
+      }
+    })
+  <span class="keyword">&lt;/script&gt;</span>
+<span class="keyword">&lt;/body&gt;</span>
+<span class="keyword">&lt;/html&gt;</span></code></pre>
+            </div>
+
+            <h3>Vue 3 Composition API</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">&lt;template&gt;</span>
+  <span class="keyword">&lt;div&gt;</span>
+    <span class="keyword">&lt;div</span> <span class="function">ref</span>=<span class="string">"editorContainer"</span><span class="keyword">&gt;&lt;/div&gt;</span>
+    <span class="keyword">&lt;button</span> <span class="function">@click</span>=<span class="string">"addText"</span><span class="keyword">&gt;</span>Add Text<span class="keyword">&lt;/button&gt;</span>
+    <span class="keyword">&lt;button</span> <span class="function">@click</span>=<span class="string">"exportPDF"</span><span class="keyword">&gt;</span>Export PDF<span class="keyword">&lt;/button&gt;</span>
+  <span class="keyword">&lt;/div&gt;</span>
+<span class="keyword">&lt;/template&gt;</span>
+
+<span class="keyword">&lt;script</span> <span class="function">setup</span><span class="keyword">&gt;</span>
+<span class="keyword">import</span> { ref, onMounted, onBeforeUnmount } <span class="keyword">from</span> <span class="string">'vue'</span>
+<span class="keyword">import</span> PDFEditorSDK <span class="keyword">from</span> <span class="string">'pdf-editor-sdk'</span>
+<span class="keyword">import</span> <span class="string">'pdf-editor-sdk/style.css'</span>
+
+<span class="keyword">const</span> editorContainer = <span class="function">ref</span>(<span class="keyword">null</span>)
+<span class="keyword">let</span> editor = <span class="keyword">null</span>
+
+<span class="function">onMounted</span>(() => {
+  editor = <span class="keyword">new</span> <span class="function">PDFEditorSDK</span>({
+    <span class="function">container</span>: editorContainer.value,
+    <span class="function">width</span>: <span class="keyword">800</span>,
+    <span class="function">height</span>: <span class="keyword">600</span>
+  })
+})
+
+<span class="keyword">const</span> <span class="function">addText</span> = () => {
+  editor?.<span class="function">addText</span>(<span class="string">'Hello from Vue!'</span>)
+}
+
+<span class="keyword">const</span> <span class="function">exportPDF</span> = <span class="keyword">async</span> () => {
+  <span class="keyword">const</span> blob = <span class="keyword">await</span> editor?.<span class="function">exportToPDF</span>()
+  <span class="comment">// Handle blob...</span>
+}
+
+<span class="function">onBeforeUnmount</span>(() => {
+  editor?.<span class="function">destroy</span>()
+})
+<span class="keyword">&lt;/script&gt;</span></code></pre>
+            </div>
+
+            <h3>React</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">import</span> React, { useEffect, useRef } <span class="keyword">from</span> <span class="string">'react'</span>
+<span class="keyword">import</span> PDFEditorSDK <span class="keyword">from</span> <span class="string">'pdf-editor-sdk'</span>
+<span class="keyword">import</span> <span class="string">'pdf-editor-sdk/style.css'</span>
+
+<span class="keyword">function</span> <span class="function">PDFEditor</span>() {
+  <span class="keyword">const</span> containerRef = <span class="function">useRef</span>(<span class="keyword">null</span>)
+  <span class="keyword">const</span> editorRef = <span class="function">useRef</span>(<span class="keyword">null</span>)
+
+  <span class="function">useEffect</span>(() => {
+    <span class="keyword">if</span> (containerRef.current) {
+      editorRef.current = <span class="keyword">new</span> <span class="function">PDFEditorSDK</span>({
+        <span class="function">container</span>: containerRef.current,
+        <span class="function">width</span>: <span class="keyword">800</span>,
+        <span class="function">height</span>: <span class="keyword">600</span>
+      })
+    }
+
+    <span class="keyword">return</span> () => {
+      editorRef.current?.<span class="function">destroy</span>()
+    }
+  }, [])
+
+  <span class="keyword">const</span> <span class="function">handleAddText</span> = () => {
+    editorRef.current?.<span class="function">addText</span>(<span class="string">'Hello from React!'</span>)
+  }
+
+  <span class="keyword">return</span> (
+    <span class="keyword">&lt;div&gt;</span>
+      <span class="keyword">&lt;div</span> <span class="function">ref</span>={containerRef}<span class="keyword">&gt;&lt;/div&gt;</span>
+      <span class="keyword">&lt;button</span> <span class="function">onClick</span>={handleAddText}<span class="keyword">&gt;</span>Add Text<span class="keyword">&lt;/button&gt;</span>
+    <span class="keyword">&lt;/div&gt;</span>
+  )
+}
+
+<span class="keyword">export default</span> PDFEditor</code></pre>
+            </div>
+
+            <h3>File Upload Integration</h3>
+            <div class="card">
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">&lt;input</span> <span class="function">type</span>=<span class="string">"file"</span> <span class="function">id</span>=<span class="string">"pdfUpload"</span> <span class="function">accept</span>=<span class="string">".pdf"</span><span class="keyword">&gt;</span>
+
+<span class="keyword">&lt;script&gt;</span>
+document.<span class="function">getElementById</span>(<span class="string">'pdfUpload'</span>)
+  .<span class="function">addEventListener</span>(<span class="string">'change'</span>, <span class="keyword">async</span> (e) => {
+    <span class="keyword">const</span> file = e.target.files[<span class="keyword">0</span>]
+    <span class="keyword">if</span> (file) {
+      <span class="keyword">try</span> {
+        <span class="keyword">await</span> editor.<span class="function">loadPDF</span>(file)
+        console.<span class="function">log</span>(<span class="string">'PDF loaded successfully'</span>)
+      } <span class="keyword">catch</span> (error) {
+        console.<span class="function">error</span>(<span class="string">'Error loading PDF:'</span>, error)
+      }
+    }
+  })
+<span class="keyword">&lt;/script&gt;</span></code></pre>
+            </div>
+        </section>
+
+        <!-- STYLING -->
+        <section id="styling">
+            <h2>🎨 Styling & Customization</h2>
+
+            <div class="card">
+                <h3>Custom Container Styles</h3>
+                <p>You can style the editor container to fit your application's design:</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">.pdf-editor-wrapper</span> {
+  <span class="function">border</span>: <span class="keyword">2px</span> <span class="keyword">solid</span> <span class="string">#e5e7eb</span>;
+  <span class="function">border-radius</span>: <span class="keyword">12px</span>;
+  <span class="function">box-shadow</span>: <span class="keyword">0</span> <span class="keyword">10px</span> <span class="keyword">30px</span> <span class="function">rgba</span>(<span class="keyword">0</span>, <span class="keyword">0</span>, <span class="keyword">0</span>, <span class="keyword">0.1</span>);
+  <span class="function">background</span>: <span class="string">#ffffff</span>;
+}
+
+<span class="keyword">.pdf-editor-wrapper</span> <span class="keyword">canvas</span> {
+  <span class="function">cursor</span>: <span class="keyword">crosshair</span>;
+}</code></pre>
+
+                <h3>Dark Theme</h3>
+                <p>Apply dark theme styles:</p>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">const</span> editor = <span class="keyword">new</span> <span class="function">PDFEditorSDK</span>({
+  <span class="function">container</span>: <span class="string">'#editor'</span>,
+  <span class="function">theme</span>: <span class="string">'dark'</span>
+})
+
+<span class="comment">/* Custom dark theme CSS */</span>
+<span class="keyword">.pdf-editor-wrapper[data-theme="dark"]</span> {
+  <span class="function">background</span>: <span class="string">#1f2937</span>;
+  <span class="function">color</span>: <span class="string">#f3f4f6</span>;
+}</code></pre>
+
+                <h3>Responsive Design</h3>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="keyword">&lt;style&gt;</span>
+<span class="keyword">@media</span> (<span class="function">max-width</span>: <span class="keyword">768px</span>) {
+  <span class="keyword">.pdf-editor-wrapper</span> {
+    <span class="function">width</span>: <span class="keyword">100%</span> <span class="keyword">!important</span>;
+    <span class="function">height</span>: <span class="keyword">100vh</span> <span class="keyword">!important</span>;
+  }
+}
+<span class="keyword">&lt;/style&gt;</span>
+
+<span class="keyword">&lt;script&gt;</span>
+<span class="comment">// Auto-resize on window resize</span>
+window.<span class="function">addEventListener</span>(<span class="string">'resize'</span>, () => {
+  editor.<span class="function">fitToScreen</span>()
+})
+<span class="keyword">&lt;/script&gt;</span></code></pre>
+            </div>
+        </section>
+
+        <!-- TROUBLESHOOTING -->
+        <section id="troubleshooting">
+            <h2>🔧 Troubleshooting</h2>
+
+            <div class="card">
+                <h3>Common Issues</h3>
+
+                <h4>Issue: "Container element not found"</h4>
+                <div class="alert alert-warning">
+                    <p><strong>Solution:</strong> Ensure the container element exists in the DOM before initializing the SDK. If using a framework, make sure to initialize in the mounted/useEffect hook.</p>
+                </div>
+
+                <h4>Issue: Canvas not rendering</h4>
+                <div class="alert alert-warning">
+                    <p><strong>Solution:</strong> Check that you've imported the CSS file and that the container has a defined width and height.</p>
+                </div>
+
+                <h4>Issue: PDF not loading</h4>
+                <div class="alert alert-warning">
+                    <p><strong>Solution:</strong> Verify the PDF file is accessible (not blocked by CORS). For cross-origin PDFs, ensure proper CORS headers are set on the server.</p>
+                </div>
+
+                <h4>Issue: Export not working</h4>
+                <div class="alert alert-warning">
+                    <p><strong>Solution:</strong> Wait for the editor to be ready (use onReady callback) before calling export methods. Large documents may take time to process.</p>
+                </div>
+
+                <h3>Browser Compatibility</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Browser</th>
+                            <th>Version</th>
+                            <th>Support</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Chrome</td>
+                            <td>90+</td>
+                            <td>✅ Full Support</td>
+                        </tr>
+                        <tr>
+                            <td>Firefox</td>
+                            <td>88+</td>
+                            <td>✅ Full Support</td>
+                        </tr>
+                        <tr>
+                            <td>Safari</td>
+                            <td>14+</td>
+                            <td>✅ Full Support</td>
+                        </tr>
+                        <tr>
+                            <td>Edge</td>
+                            <td>90+</td>
+                            <td>✅ Full Support</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Performance Tips</h3>
+                <ul style="color: var(--text-secondary); margin-left: 2rem;">
+                    <li>For large PDFs (\u003e100 pages), consider implementing pagination</li>
+                    <li>Optimize images before adding them to the canvas</li>
+                    <li>Use lower DPI for screen display (72-96), higher for print (300)</li>
+                    <li>Call destroy() when unmounting to prevent memory leaks</li>
+                    <li>Debounce canvas events for better performance</li>
+                </ul>
+
+                <h3>Debug Mode</h3>
+                <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code><span class="comment">// Access internal canvas for debugging</span>
+<span class="keyword">const</span> canvas = editor.<span class="function">getCanvas</span>()
+console.<span class="function">log</span>(<span class="string">'Canvas objects:'</span>, canvas.<span class="function">getObjects</span>())
+console.<span class="function">log</span>(<span class="string">'Active object:'</span>, canvas.<span class="function">getActiveObject</span>())
+
+<span class="comment">// Listen to canvas events</span>
+canvas.<span class="function">on</span>(<span class="string">'object:added'</span>, (e) => {
+  console.<span class="function">log</span>(<span class="string">'Object added:'</span>, e.target)
+})</code></pre>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>💡 Need Help?</strong> For additional support or custom integration assistance, please contact your account manager or refer to the source code documentation.
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2024 PDF Editor SDK - Premium PDF Editing Solution</p>
+            <p style="margin-top: 0.5rem; font-size: 0.875rem;">Built with Fabric.js, Vue 3, and pdf-lib</p>
+        </div>
+    </footer>
+
+    <script>
+        // Copy code functionality
+        function copyCode(button) {
+            const code = button.nextElementSibling.textContent
+            const textarea = document.createElement('textarea')
+            textarea.value = code
+            document.body.appendChild(textarea)
+            textarea.select()
+            document.execCommand('copy')
+            document.body.removeChild(textarea)
+            
+            const originalText = button.textContent
+            button.textContent = 'Copied!'
+            button.style.background = 'var(--success)'
+            
+            setTimeout(() => {
+                button.textContent = originalText
+                button.style.background = 'var(--primary)'
+            }, 2000)
+        }
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault()
+                const target = document.querySelector(this.getAttribute('href'))
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            })
+        })
+    </script>
+</body>
+</html>

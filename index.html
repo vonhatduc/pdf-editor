@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Editor SDK - Test Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #667eea;
+            color: white;
+        }
+
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: #64748b;
+        }
+
+        button.secondary:hover {
+            background: #475569;
+        }
+
+        button.success {
+            background: #10b981;
+        }
+
+        button.success:hover {
+            background: #059669;
+        }
+
+        .editor-wrapper {
+            padding: 2rem;
+            min-height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f1f5f9;
+        }
+
+        #editor-container {
+            width: 100%;
+            max-width: 900px;
+            height: 600px;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .status {
+            padding: 1rem 1.5rem;
+            background: #f1f5f9;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: #3b82f6;
+            color: white;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        .file-label:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 PDF Editor SDK - Test Page</h1>
+            <p>Simple integration example using UMD build</p>
+        </div>
+
+        <div class="toolbar">
+            <label class="file-label" for="pdfUpload">
+                📁 Upload PDF
+            </label>
+            <input type="file" id="pdfUpload" accept=".pdf">
+            
+            <button onclick="testAddText()">✏️ Add Text</button>
+            <button onclick="testAddImage()">🖼️ Add Image</button>
+            <button onclick="testZoomIn()">🔍 Zoom In</button>
+            <button onclick="testZoomOut()">🔍 Zoom Out</button>
+            <button onclick="testFitToScreen()">📐 Fit to Screen</button>
+            <button class="secondary" onclick="testAddPage()">➕ Add Page</button>
+            <button class="secondary" onclick="testDeleteSelected()">🗑️ Delete</button>
+            <button class="success" onclick="testExportPDF()">💾 Export PDF</button>
+            <button class="success" onclick="testExportPNG()">💾 Export PNG</button>
+        </div>
+
+        <div class="editor-wrapper">
+            <div id="editor-container"></div>
+        </div>
+
+        <div class="status" id="status">
+            ⏳ Initializing editor...
+        </div>
+    </div>
+
+    <!-- Peer Dependency Styles -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css">
+
+    <!-- Load peer dependencies first (required by UMD build) -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.30/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-demi@0.14.6/lib/index.iife.min.js"></script> <!-- Required by Pinia v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/pinia@2.1.7/dist/pinia.iife.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/element-plus/dist/index.full.min.js"></script>
+    
+    <!-- Load SDK from UMD build -->
+    <script src="./dist/lib/pdf-editor-sdk.umd.js"></script>
+    
+    <script>
+        let editor = null;
+        const statusEl = document.getElementById('status');
+
+        function setStatus(message, type = 'info') {
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        // Initialize the editor
+        try {
+            setStatus('🚀 Initializing PDF Editor SDK...');
+            
+            // Access the SDK from UMD build
+            // The library name in vite.config.lib.ts is 'PDFEditorSDK'
+            // So it will be available as window.PDFEditorSDK
+            const PDFEditorSDK = window.PDFEditorSDK?.default || window.PDFEditorSDK;
+            
+            if (!PDFEditorSDK) {
+                throw new Error('SDK not loaded. Please ensure pdf-editor-sdk.umd.js is loaded correctly.');
+            }
+
+            console.log('Found PDFEditorSDK:', PDFEditorSDK);
+
+            editor = new PDFEditorSDK({
+                container: '#editor-container',
+                width: 850,
+                height: 580,
+                theme: 'light',
+                wasmUrl: './dist/lib/pdfcore.wasm',
+                onReady: () => {
+                    setStatus('✅ Editor ready! Upload a PDF or use the toolbar to get started.', 'success');
+                    console.log('Editor initialized successfully!');
+                },
+                onError: (error) => {
+                    setStatus(`❌ Error: ${error.message}`, 'error');
+                    console.error('Editor error:', error);
+                }
+            });
+
+            console.log('Editor instance created:', editor);
+
+        } catch (error) {
+            setStatus(`❌ Failed to initialize: ${error.message}`, 'error');
+            console.error('Initialization error:', error);
+        }
+
+        // PDF Upload Handler
+        document.getElementById('pdfUpload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    setStatus('📖 Loading PDF...');
+                    await editor.loadPDF(file);
+                    setStatus(`✅ PDF loaded successfully: ${file.name}`, 'success');
+                } catch (error) {
+                    setStatus(`❌ Error loading PDF: ${error.message}`, 'error');
+                    console.error('PDF load error:', error);
+                }
+            }
+        });
+
+        // Test Functions
+        function testAddText() {
+            try {
+                editor.addText('Hello World!', {
+                    fontSize: 32,
+                    fontWeight: 'bold',
+                    fill: '#667eea'
+                });
+                setStatus('✅ Text added to canvas', 'success');
+            } catch (error) {
+                setStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testAddImage() {
+            const imageUrl = prompt('Enter image URL:', 'https://via.placeholder.com/300x200');
+            if (imageUrl) {
+                try {
+                    editor.addImage(imageUrl);
+                    setStatus('✅ Image added to canvas', 'success');
+                } catch (error) {
+                    setStatus(`❌ Error: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        function testZoomIn() {
+            try {
+                const currentZoom = editor.getZoom();
+                editor.setZoom(currentZoom * 1.2);
+                setStatus(`🔍 Zoom: ${Math.round(editor.getZoom() * 100)}%`);
+            } catch (error) {
+                setStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testZoomOut() {
+            try {
+                const currentZoom = editor.getZoom();
+                editor.setZoom(currentZoom * 0.8);
+                setStatus(`🔍 Zoom: ${Math.round(editor.getZoom() * 100)}%`);
+            } catch (error) {
+                setStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testFitToScreen() {
+            try {
+                editor.fitToScreen();
+                setStatus('✅ Canvas fitted to screen');
+            } catch (error) {
+                setStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testAddPage() {
+            try {
+                editor.addPage();
+                setStatus('✅ New page added', 'success');
+            } catch (error) {
+                setStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testDeleteSelected() {
+            try {
+                editor.deleteSelected();
+                setStatus('✅ Selected element deleted');
+            } catch (error) {
+                setStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testExportPDF() {
+            try {
+                setStatus('💾 Exporting to PDF...');
+                const blob = await editor.exportToPDF({
+                    quality: 1,
+                    dpi: 300
+                });
+                
+                // Download the PDF
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `document-${Date.now()}.pdf`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                setStatus('✅ PDF exported successfully!', 'success');
+            } catch (error) {
+                setStatus(`❌ Error exporting PDF: ${error.message}`, 'error');
+                console.error('Export error:', error);
+            }
+        }
+
+        async function testExportPNG() {
+            try {
+                setStatus('💾 Exporting to PNG...');
+                const blob = await editor.exportToPNG({
+                    quality: 1,
+                    dpi: 150
+                });
+                
+                // Download the PNG
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `image-${Date.now()}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                setStatus('✅ PNG exported successfully!', 'success');
+            } catch (error) {
+                setStatus(`❌ Error exporting PNG: ${error.message}`, 'error');
+                console.error('Export error:', error);
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (editor) {
+                editor.destroy();
+            }
+        });
+    </script>
+</body>
+</html>
