@@ -1,3 +1,7 @@
+*Languages: [🇺🇸 English](README.md) • [🇷🇺 Русский](README.ru.md) • [🇺🇦 Українська](README.uk.md) • [🇫🇷 Français](README.fr.md) • [🇯🇵 日本語](README.ja.md)*
+
+---
+
 # 📄 PDF Editor SDK - Web PDF Manipulation Library
 
 [![Powered by SayPDF](https://img.shields.io/badge/Powered%20by-SayPDF.com-blue?style=for-the-badge&logo=adobe)](https://saypdf.com)
